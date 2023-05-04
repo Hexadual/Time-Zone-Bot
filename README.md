@@ -13,3 +13,5 @@ Redoing the bot and adding new functionality.
 - Server Logging and security features
 	- Member role updates
 	- Members joining and leaving
+- Server quality of life
+	- React roles
