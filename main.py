@@ -5,11 +5,17 @@ from dotenv import dotenv_values
 
 CONFIG = dotenv_values(".env")
 
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix=CONFIG["COMMAND_PREFIX"], intents=intents)
-
 async def main() -> None:
+    intents = discord.Intents.default()
+    intents.message_content = True
+    applicationId = int(CONFIG["APPLICATION_ID"])
+    guildId = int(CONFIG["GUILD_ID"])
+    bot = commands.Bot(command_prefix=CONFIG["COMMAND_PREFIX"], intents=intents, application_id=applicationId)
+
+    @bot.event
+    async def on_ready():
+        await bot.tree.sync(guild=discord.Object(id=guildId))
+
     async with bot:
         await bot.load_extension("cogs.clock")
         await bot.load_extension("cogs.birthday")
