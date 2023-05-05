@@ -9,18 +9,17 @@ from main import CONFIG
 class Clock(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.UTCStorage = {}
-        # TODO: Implement permanent storage
+        self.temporaryStorage = {} # TODO: Implement permanent storage
     
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.author.id == self.bot.user.id:
             return
-        if not message.author.name in self.UTCStorage:
+        if not message.author.id in self.temporaryStorage:
             return
         
-        sign = "-" if self.UTCStorage[message.author.name] - time.daylight < 0 else "+"
-        offset = f"{sign}{abs(self.UTCStorage[message.author.name] + time.daylight):02d}00"
+        sign = "-" if self.temporaryStorage[message.author.id] - time.daylight < 0 else "+"
+        offset = f"{sign}{abs(self.temporaryStorage[message.author.id] + time.daylight):02d}00"
         
         found = re.findall("((?:0?1?\d|2[0-3]):(?:[0-5]\d)(?: ?)|24:00(?: ?)|(?<!\d)[0-9]{1,2}(?: ?)(?=[apAP]))(?:(?<=[\d ])(am|AM|Am|pm|PM|Pm)\s?)?", message.content)
         
@@ -55,22 +54,20 @@ class Clock(commands.Cog):
             await message.channel.send(messageToSend)
     
     @app_commands.command(name="setutcoffset",
-                          description="Sets your UTC offset. Required to use the Clock functionality.",
-                          nsfw=False)
+                          description="Sets your UTC offset. Required to use the Clock functionality.")
     @app_commands.describe(offset="An integer between -12 and 14.")
     async def setutcoffset(self, interaction: discord.Interaction, offset: int) -> None:
         if -12 <= offset <= 14:
-            self.UTCStorage[interaction.user.name] = offset
+            self.temporaryStorage[interaction.user.id] = offset
             await interaction.response.send_message("Successfully set your UTC offset.", ephemeral=True)
         else:
             await interaction.response.send_message("That is not a valid UTC offset.", ephemeral=True)
     
     @app_commands.command(name="getutcoffset",
-                          description="Gets your UTC offset.",
-                          nsfw=False)
+                          description="Gets your UTC offset.")
     async def getutcoffset(self, interaction: discord.Interaction) -> None:
-        if interaction.user.name in self.UTCStorage:
-           offset = self.UTCStorage[interaction.user.name]
+        if interaction.user.id in self.temporaryStorage:
+           offset = self.temporaryStorage[interaction.user.id]
            await interaction.response.send_message(f"Your UTC offset is {offset}.", ephemeral=True)
         else:
             await interaction.response.send_message("You do not have a UTC offset.", ephemeral=True)
