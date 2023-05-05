@@ -19,21 +19,15 @@ class Clock(commands.Cog):
         if not message.author.name in self.UTCStorage:
             return
         
-        sign = ""
-        if self.UTCStorage[message.author.name] - time.daylight < 0:
-            sign = "-"
-        else:
-            sign = "+"
+        sign = "-" if self.UTCStorage[message.author.name] - time.daylight < 0 else "+"
         offset = f"{sign}{abs(self.UTCStorage[message.author.name] + time.daylight):02d}00"
         
         found = re.findall("((?:0?1?\d|2[0-3]):(?:[0-5]\d)(?: ?)|24:00(?: ?)|(?<!\d)[0-9]{1,2}(?: ?)(?=[apAP]))(?:(?<=[\d ])(am|AM|Am|pm|PM|Pm)\s?)?", message.content)
         
-        if found:
-            
+        if found: 
             now = datetime.datetime.now()
             currentTime = now.time()
             currentDate = now.date()
-            messageToSend = ""
 
             for i in range(len(found)):
                 timeString = f"{found[i][0]}-{found[i][1]}-{str(currentDate)}-{offset}"
@@ -58,13 +52,12 @@ class Clock(commands.Cog):
                 messageToSend = "*** " + message.author.display_name + ":***  " + referenceTime.strftime("%I:%M %p") + " | ***Local:*** <t:" + str(int(totalSeconds)) + ":t> \n"
  
             messageToSend = f">>> {messageToSend}"
-
             await message.channel.send(messageToSend)
     
     @app_commands.command(name="setutcoffset",
                           description="Sets your UTC offset. Required to use the Clock functionality.",
                           nsfw=False)
-    @app_commands.describe(offset="An integer between -11 and 14.")
+    @app_commands.describe(offset="An integer between -12 and 14.")
     async def setutcoffset(self, interaction: discord.Interaction, offset: int) -> None:
         if -12 <= offset <= 14:
             self.UTCStorage[interaction.user.name] = offset
