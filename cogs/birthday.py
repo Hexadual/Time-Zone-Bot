@@ -8,7 +8,7 @@ from calendar import month_name as monthNames
 class Birthday(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.channelId = CONFIG["BIRTHDAY_CHANNEL_ID"]
+        self.birthdayChannel = self.bot.get_channel(int(CONFIG["BIRTHDAY_CHANNEL_ID"]))
     
     def _ordinal(self, n: int) -> str: # Adds th, st, nd, and rd to the end of a day (e.g. 25th, 21st).
         s = ("th", "st", "nd", "rd") + ("th",) * 10
@@ -20,15 +20,16 @@ class Birthday(commands.Cog):
     
     @tasks.loop(time=datetime.time(8,0,0,0))
     async def birthday(self):
-        if self.channelId:
-            channel = self.get_channel(self.channelId)
-            today = datetime.date.today()
-            birthdays = self.bot.db.getAllBirthdays()
-            for birthday in birthdays:
-                (memberId, month, day) = birthday
-                if today.month == month and today.day == day:
-                    user = await self.fetch_user(memberId)
-                    await channel.send(f"Happy Birthday {user.display_name}!")
+        today = datetime.date.today()
+        birthdays = self.bot.db.getAllBirthdays()
+        for birthday in birthdays:
+            (memberId, month, day) = birthday
+            if today.month == month and today.day == day:
+                user = await self.bot.fetch_user(memberId)
+                if self.birthdayChannel:
+                    await self.birthdayChannel.send(f"Happy Birthday {user.display_name}!")
+                elif self.bot.defaultChannel:
+                    await self.bot.defaultChannel.send(f"Happy Birthday {user.display_name}!")
     
     @app_commands.command(name="setbirthday", description="Sets your birthday. Required to use the Birthday functionality")
     @app_commands.describe(month="An integer between or equal to 1 and 12.",

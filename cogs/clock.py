@@ -20,7 +20,7 @@ class Clock(commands.Cog):
         
         intOffset = intOffset[0]
 
-        sign = "-" if intOffset - time.daylight < 0 else "+"
+        sign = "-" if intOffset < 0 else "+"
         offset = f"{sign}{abs(intOffset + time.daylight):02d}00"
         
         found = re.findall("((?:0?1?\d|2[0-3]):(?:[0-5]\d)(?: ?)|24:00(?: ?)|(?<!\d)[0-9]{1,2}(?: ?)(?=[apAP]))(?:(?<=[\d ])(am|AM|Am|pm|PM|Pm)\s?)?", message.content)
